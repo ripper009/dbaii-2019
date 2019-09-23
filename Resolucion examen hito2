@@ -1,0 +1,73 @@
+Select fullname as Nombre_Completo,ci as CI_USERS, bok.title as Libro_prestado
+from users
+  INNER JOIN prestamos as pre on users.id_user = pre.id_user
+  INNER JOIN book as bok on pre.id_book = bok.id_book
+  INNER JOIN category as cat on cat.id_book = bok.id_book
+where cat.type = 'manga' or cat.type = 'comedia';
+
+drop function  Mostrar_cantidad;
+
+
+select COUNT(pre.id_prestamo)
+from prestamos as pre
+ inner join book as bk on pre.id_book = bk.id_book
+where bk.editorial='IBRANI' and bk.pages >90;
+
+
+CREATE FUNCTION Mostrar_cantidad( editorialbook text,pagebook integer) RETURNS integer
+BEGIN
+  declare respuesta INTEGER default 0;
+
+    select COUNT(pre.id_prestamo) into respuesta
+    from prestamos as pre
+    inner join book as bk on pre.id_book = bk.id_book
+    where bk.editorial= editorialbook and bk.pages > pagebook;
+
+    return respuesta;
+
+end;
+
+select Mostrar_cantidad( 'IBRANI' , 90) as IBRANI_90;
+
+create function verificaPar(pagesBook Integer) returns TEXT
+  begin
+    declare respuesta TEXT DEFAULT '';
+
+    IF pagesBook % 2=0
+      then
+      set respuesta = CONCAT('PAR :',pagesBook);
+      else
+      set respuesta = CONCAT('impar :', pagesBook);
+    end if;
+    return respuesta;
+  end;
+
+select CONCAT('EDITORIAL :',bk.editorial,'Categoria :',cat.type) as DESCRIPCION,
+      verificaPar(bk.pages)
+from book as bk
+INNER JOIN category as  cat on bk.id_book = cat.id_book
+where cat.type = 'MANGA';
+
+create function deleteOrModifyOrInsertTableAutor
+(action TEXT, idAutor INTEGER, nameAutor TEXT,nacionalidadAutor TEXT) returns TEXT
+BEGIN
+  if action = 'delete'
+    then
+    delete from autor where id_autor= idAutor;
+  end if;
+  if action = 'update'
+    then
+    update autor SET name = nameAutor;
+  end if;
+  if action ='insert'
+    then
+    Insert INTO autor(name,nacionality) values( nameAutor,nacionality);
+  end if;
+  return CONCAT(action, ' action  realizado exitosamente' );
+end;
+
+
+
+select COUNT(PRE.id_prestamo) AS CANTIDAD_2018
+FROM prestamos as pre
+where YEAR(pre.fec_prestamo)= 2018;
